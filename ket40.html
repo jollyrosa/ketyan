@@ -1,0 +1,1112 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>KET 单词四十天</title>
+<style>
+:root{
+  --bg:#0F1B2D; --surface:#18293F; --surface2:#22364F; --line:#2C4260;
+  --ink:#F1F6FC; --dim:#8FA6C0;
+  --cyan:#3BD6F2; --amber:#FFB547; --coral:#FF6E6E; --green:#5CE0A1; --violet:#9D8CFF;
+  --disp:"SF Pro Rounded",ui-rounded,"Hiragino Maru Gothic ProN","PingFang SC",system-ui,sans-serif;
+  --body:-apple-system,"PingFang SC","Microsoft YaHei",system-ui,sans-serif;
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{height:100%}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);overflow:hidden;
+  background-image:radial-gradient(1px 1px at 20% 30%,#3a5a80 50%,transparent 51%),
+  radial-gradient(1.5px 1.5px at 85% 60%,#2f4a6b 50%,transparent 51%),
+  radial-gradient(1px 1px at 40% 80%,#2f4a6b 50%,transparent 51%);}
+#app{max-width:720px;margin:0 auto;height:100%;display:flex;flex-direction:column;padding:max(14px,env(safe-area-inset-top)) 18px max(14px,env(safe-area-inset-bottom))}
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:4px 2px 12px}
+.brand{font-family:var(--disp);font-weight:800;font-size:17px;color:var(--cyan)}
+.streak{font-family:var(--disp);font-weight:700;font-size:14px;color:var(--amber);background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:6px 13px}
+.stage{flex:1;display:flex;flex-direction:column;overflow-y:auto;-webkit-overflow-scrolling:touch}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:20px;padding:22px}
+h1{font-family:var(--disp);font-size:24px;font-weight:800;line-height:1.3}
+h2{font-family:var(--disp);font-size:19px;font-weight:800}
+.sub{color:var(--dim);font-size:14.5px;line-height:1.65;margin-top:8px}
+.btn{display:block;width:100%;border:none;cursor:pointer;font-family:var(--disp);font-weight:800;font-size:18px;color:#0B1524;background:var(--cyan);border-radius:16px;padding:17px;margin-top:13px;transition:transform .08s}
+.btn:active{transform:scale(.96)}
+.btn.ghost{background:var(--surface2);color:var(--ink);border:1px solid var(--line)}
+.pbar{height:9px;border-radius:99px;background:var(--surface2);margin:10px 0;overflow:hidden}
+.pbar i{display:block;height:100%;background:linear-gradient(90deg,var(--cyan),var(--violet));border-radius:99px;transition:width .25s}
+.stats{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-top:14px}
+.stat{background:var(--surface2);border:1px solid var(--line);border-radius:14px;padding:12px;text-align:center}
+.stat b{font-family:var(--disp);font-size:22px;display:block;color:var(--cyan)}
+.stat span{font-size:12px;color:var(--dim)}
+/* 分拣 */
+.sortword{font-family:var(--disp);font-weight:800;font-size:52px;text-align:center;margin:6px 0 2px;letter-spacing:1px}
+.sortemoji{font-size:52px;text-align:center;min-height:64px;margin-top:4px}
+.sortbtns{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:16px}
+.sbtn{border:none;border-radius:16px;font-family:var(--disp);font-weight:800;font-size:19px;padding:20px 8px;cursor:pointer;transition:transform .07s}
+.sbtn:active{transform:scale(.94)}
+.sbtn.yes{background:#173A2E;color:var(--green);border:1.5px solid var(--green)}
+.sbtn.no{background:#3A2530;color:var(--coral);border:1.5px solid var(--coral)}
+/* 卡片翻面 */
+.flip{perspective:1100px;margin:8px 0}
+.flipinner{position:relative;transform-style:preserve-3d;transition:transform .45s;min-height:330px}
+.flip.on .flipinner{transform:rotateY(180deg)}
+.face{position:absolute;inset:0;backface-visibility:hidden;-webkit-backface-visibility:hidden;background:var(--surface);border:1px solid var(--line);border-radius:20px;padding:22px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px}
+.face.back{transform:rotateY(180deg)}
+.cardword{font-family:var(--disp);font-weight:800;font-size:46px;text-align:center;letter-spacing:1px}
+.cardword .pat{color:var(--violet)}
+.cardemoji{font-size:46px;min-height:56px}
+.cn{font-size:26px;font-weight:700}
+.sent{font-family:Georgia,serif;font-size:18px;line-height:1.7;color:var(--ink);text-align:center;padding:0 4px}
+.hintflip{color:var(--dim);font-size:13px}
+.speaker{width:66px;height:66px;border-radius:50%;border:2px solid var(--cyan);background:var(--surface2);font-size:28px;cursor:pointer}
+.speaker:active{transform:scale(.92)}
+.speaker.sm{width:46px;height:46px;font-size:19px}
+.grades{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-top:12px}
+.gbtn{border:none;border-radius:14px;font-family:var(--disp);font-weight:800;font-size:16px;padding:16px 4px;cursor:pointer}
+.gbtn:active{transform:scale(.94)}
+.g-know{background:#173A2E;color:var(--green)}
+.g-fuzzy{background:#3A3220;color:var(--amber)}
+.g-no{background:#3A2530;color:var(--coral)}
+.tag{display:inline-block;font-size:12px;font-weight:700;border-radius:999px;padding:3px 11px;margin-bottom:4px}
+.tag.new{color:var(--cyan);background:rgba(59,214,242,.12)}
+.tag.rev{color:var(--amber);background:rgba(255,181,71,.12)}
+.combo{position:fixed;top:16%;left:50%;transform:translateX(-50%);font-family:var(--disp);font-weight:800;font-size:28px;color:var(--amber);pointer-events:none;opacity:0}
+.combo.pop{animation:cpop .7s ease}
+@keyframes cpop{0%{opacity:0;transform:translateX(-50%) scale(.6)}25%{opacity:1;transform:translateX(-50%) scale(1.12)}70%{opacity:1}100%{opacity:0;transform:translateX(-50%) translateY(-28px)}}
+.center{text-align:center}
+.result-star{font-size:52px;text-align:center;margin:8px 0}
+.footer-note{text-align:center;color:var(--dim);font-size:12.5px;padding-top:8px}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<script>
+window.onerror=function(msg,src,line,col){
+  var d=document.createElement("div");
+  d.style.cssText="position:fixed;top:0;left:0;right:0;background:#B3261E;color:#fff;padding:13px;font:13px/1.5 monospace;z-index:9999;white-space:pre-wrap";
+  d.textContent="⚠️ 脚本错误(截图发给 Claude):\n"+msg+"\n行 "+line+":"+col;
+  document.body?document.body.appendChild(d):document.addEventListener("DOMContentLoaded",function(){document.body.appendChild(d);});
+  return false;};
+</script>
+<noscript><div style="color:#fff;padding:30px">这个页面需要 JavaScript,请在 Safari 设置中允许后刷新。</div></noscript>
+<div id="app"><div style="color:#8FA6C0;padding:40px 20px;font-size:16px;text-align:center">正在加载…<br><br>如果这行字超过 5 秒仍然显示,说明脚本没有启动,请截图发给 Claude。</div></div>
+<div class="combo" id="combo"></div>
+<script>
+"use strict";
+const WORDS=[
+{w:"about",c:"关于;大约",s:"This book is about a robot from space."},
+{w:"above",c:"在…上方",e:"⬆️",s:"The moon is above the clouds."},
+{w:"abroad",c:"在国外",e:"✈️",s:"My cousin studies abroad in the UK."},
+{w:"accident",c:"事故",e:"🚑",s:"There was a small accident on the road."},
+{w:"across",c:"穿过;对面",s:"Max ran across the field with the flag."},
+{w:"activity",c:"活动",s:"Drumming is my favourite activity."},
+{w:"actor",c:"演员",e:"🎭",s:"The actor in this film is very funny."},
+{w:"address",c:"地址",e:"🏠",s:"Please write your address on the card."},
+{w:"adult",c:"成年人",s:"Adults pay more for the tickets."},
+{w:"advice",c:"建议",s:"The coach gave me good advice."},
+{w:"afraid",c:"害怕的",e:"😨",s:"He is not afraid of the dark."},
+{w:"after",c:"在…之后",s:"We play games after homework."},
+{w:"afternoon",c:"下午",s:"Drum class is on Saturday afternoon."},
+{w:"again",c:"再一次",s:"Can you play that song again?"},
+{w:"against",c:"对抗;反对",s:"The Rockets play against the Tigers today."},
+{w:"age",c:"年龄",s:"Kids of my age love this game."},
+{w:"ago",c:"…以前",s:"I started drums two years ago."},
+{w:"agree",c:"同意",e:"👍",s:"I agree with your plan."},
+{w:"air",c:"空气",e:"💨",s:"The mountain air is clean and cool."},
+{w:"airport",c:"机场",e:"🛫",s:"We arrived at the airport early."},
+{w:"alone",c:"独自",s:"He likes reading comics alone at night."},
+{w:"already",c:"已经",s:"I have already finished my homework."},
+{w:"also",c:"也",s:"She plays drums and also the piano."},
+{w:"always",c:"总是",s:"Bolt always helps his friends."},
+{w:"amazing",c:"令人惊叹的",e:"🤩",s:"The drum show was amazing!"},
+{w:"ambulance",c:"救护车",e:"🚑",s:"The ambulance came very fast."},
+{w:"among",c:"在…之中",s:"He is the fastest among the players."},
+{w:"angry",c:"生气的",e:"😠",s:"Do not be angry, it is only a game."},
+{w:"animal",c:"动物",e:"🦁",s:"A fox is a clever animal."},
+{w:"another",c:"另一个",s:"Can I have another try?"},
+{w:"answer",c:"回答;答案",s:"Nobody knew the answer to the question."},
+{w:"apartment",c:"公寓",e:"🏢",s:"They live in an apartment near the park."},
+{w:"appointment",c:"预约",e:"📅",s:"Mum has a doctor appointment at ten."},
+{w:"area",c:"地区;区域",s:"This area of the city is very quiet."},
+{w:"arm",c:"手臂",e:"💪",s:"My arms hurt after drum practice."},
+{w:"around",c:"围绕;大约",s:"The players stood around the coach."},
+{w:"arrive",c:"到达",s:"The train arrives at nine."},
+{w:"art",c:"艺术;美术",e:"🎨",s:"Art is my favourite class after music."},
+{w:"ask",c:"问;请求",s:"Ask the teacher if you are not sure."},
+{w:"asleep",c:"睡着的",e:"😴",s:"The baby fell asleep on the bus."},
+{w:"attack",c:"进攻;攻击",s:"Our team started the attack quickly."},
+{w:"aunt",c:"姑姑;阿姨",s:"My aunt makes the best noodles."},
+{w:"autumn",c:"秋天",e:"🍂",s:"The leaves turn gold in autumn."},
+{w:"awake",c:"醒着的",s:"I was still awake at midnight."},
+{w:"away",c:"离开;远离",s:"The bird flew away into the sky."},
+{w:"backpack",c:"背包",e:"🎒",s:"My backpack is full of comic books."},
+{w:"badminton",c:"羽毛球",e:"🏸",s:"We play badminton in the gym."},
+{w:"balcony",c:"阳台",s:"You can see the sea from the balcony."},
+{w:"banana",c:"香蕉",e:"🍌",s:"A banana before the game gives you energy."},
+{w:"band",c:"乐队",e:"🎸",s:"Max plays drums in the school band."},
+{w:"bank",c:"银行",e:"🏦",s:"The bank is next to the bookshop."},
+{w:"baseball",c:"棒球",e:"⚾",s:"Baseball caps look cool on him."},
+{w:"basketball",c:"篮球",e:"🏀",s:"We watch basketball on Friday nights."},
+{w:"bath",c:"洗澡;浴缸",e:"🛁",s:"He takes a bath after training."},
+{w:"bathroom",c:"浴室",e:"🚿",s:"The bathroom is upstairs."},
+{w:"beach",c:"海滩",e:"🏖️",s:"We built a sand robot on the beach."},
+{w:"bean",c:"豆子",e:"🫘",s:"Space food has a lot of beans."},
+{w:"bear",c:"熊",e:"🐻",s:"The bear in the story loves honey."},
+{w:"beard",c:"胡须",e:"🧔",s:"My uncle has a long beard."},
+{w:"beautiful",c:"美丽的",e:"🌸",s:"The night sky is beautiful here."},
+{w:"because",c:"因为",s:"I love this game because it is hard."},
+{w:"become",c:"变成;成为",s:"He wants to become a drummer."},
+{w:"bedroom",c:"卧室",e:"🛏️",s:"His bedroom wall is full of posters."},
+{w:"before",c:"在…之前",s:"Warm up before the match."},
+{w:"begin",c:"开始",s:"The show will begin at seven."},
+{w:"behind",c:"在…后面",s:"The ball rolled behind the sofa."},
+{w:"believe",c:"相信",s:"I believe our team can win."},
+{w:"belt",c:"腰带",s:"The flag hangs from a belt in flag football."},
+{w:"beside",c:"在…旁边",s:"Sit beside me and watch this video."},
+{w:"between",c:"在…之间",s:"The shop is between the bank and the park."},
+{w:"bicycle",c:"自行车",e:"🚲",s:"He rides his bicycle to drum class."},
+{w:"biology",c:"生物学",e:"🧬",s:"We learned about fish in biology."},
+{w:"birth",c:"出生",s:"Write your date of birth here."},
+{w:"birthday",c:"生日",e:"🎂",s:"I got a comic set for my birthday."},
+{w:"biscuit",c:"饼干",e:"🍪",s:"One more biscuit, then homework."},
+{w:"blanket",c:"毯子",s:"He reads comics under the blanket."},
+{w:"blond",c:"金发的",s:"The new player has blond hair."},
+{w:"blood",c:"血",e:"🩸",s:"Doctors check your blood at the hospital."},
+{w:"board",c:"板;写字板",s:"The coach drew the play on the board."},
+{w:"boat",c:"船",e:"⛵",s:"The boat sailed slowly down the river."},
+{w:"body",c:"身体",s:"Drumming is exercise for the whole body."},
+{w:"boil",c:"煮沸",s:"Boil the water before you add noodles."},
+{w:"bored",c:"感到无聊的",e:"🥱",s:"I am never bored with a good comic."},
+{w:"boring",c:"无聊的",s:"The film was long and boring."},
+{w:"born",c:"出生的",s:"He was born in a small town."},
+{w:"borrow",c:"借入",s:"Can I borrow your science fiction book?"},
+{w:"boss",c:"老板",s:"The game boss is really hard to beat."},
+{w:"both",c:"两者都",s:"Both teams played very well."},
+{w:"bottle",c:"瓶子",e:"🍼",s:"Bring a bottle of water to training."},
+{w:"bottom",c:"底部",s:"The answer is at the bottom of the page."},
+{w:"bowl",c:"碗",e:"🍜",s:"A big bowl of noodles after the match!"},
+{w:"brain",c:"大脑",e:"🧠",s:"Chess is a sport for the brain."},
+{w:"brave",c:"勇敢的",s:"The brave robot saved the city."},
+{w:"bread",c:"面包",e:"🍞",s:"Fresh bread smells wonderful."},
+{w:"break",c:"打破;休息",s:"Take a break every twenty minutes."},
+{w:"breakfast",c:"早餐",e:"🥞",s:"Eggs and milk for breakfast today."},
+{w:"bridge",c:"桥",e:"🌉",s:"The robot built a bridge in one night."},
+{w:"bright",c:"明亮的",e:"✨",s:"A bright light crossed the night sky."},
+{w:"bring",c:"带来",s:"Bring your drumsticks to the show."},
+{w:"broken",c:"坏了的",s:"My headphones are broken again."},
+{w:"brush",c:"刷子;刷",e:"🪥",s:"Brush your teeth before bed."},
+{w:"build",c:"建造",e:"🏗️",s:"We build worlds in this game."},
+{w:"burger",c:"汉堡",e:"🍔",s:"A burger after the game is the best."},
+{w:"burn",c:"燃烧;烧伤",e:"🔥",s:"Careful, do not burn the toast."},
+{w:"business",c:"生意;商业",s:"Mum runs her own business."},
+{w:"busy",c:"忙碌的",s:"Saturday is busy: drums, then football."},
+{w:"butter",c:"黄油",e:"🧈",s:"Put some butter on the bread."},
+{w:"button",c:"按钮;纽扣",e:"🔘",s:"Press the red button to start."},
+{w:"buy",c:"买",e:"🛒",s:"I saved money to buy new drumsticks."},
+{w:"cabbage",c:"卷心菜",e:"🥬",s:"Grandma grows cabbage in the garden."},
+{w:"cafe",c:"咖啡馆",e:"☕",s:"We met at the cafe near school."},
+{w:"cake",c:"蛋糕",e:"🍰",s:"The birthday cake had a drum on it."},
+{w:"calendar",c:"日历",e:"📅",s:"Mark the match day on the calendar."},
+{w:"call",c:"打电话;称呼",e:"📞",s:"Call me when you get home."},
+{w:"camera",c:"相机",e:"📷",s:"Dad filmed the show with his camera."},
+{w:"camp",c:"营地;露营",e:"⛺",s:"Football camp starts next week."},
+{w:"candy",c:"糖果",e:"🍬",s:"Too much candy is bad for your teeth."},
+{w:"cap",c:"帽子(鸭舌帽)",e:"🧢",s:"He never takes off his team cap."},
+{w:"capital",c:"首都",s:"London is the capital of the UK."},
+{w:"captain",c:"队长",s:"The captain shouted the next play."},
+{w:"careful",c:"小心的",s:"Be careful with the glass door."},
+{w:"carpet",c:"地毯",s:"The cat sleeps on the carpet."},
+{w:"carrot",c:"胡萝卜",e:"🥕",s:"Rabbits and robots both like carrots, Bolt says."},
+{w:"carry",c:"携带;搬运",s:"Help me carry the drum, please."},
+{w:"cartoon",c:"卡通;动画片",s:"We watch cartoons on Sunday morning."},
+{w:"castle",c:"城堡",e:"🏰",s:"The game has a castle full of secrets."},
+{w:"catch",c:"接住;抓住",s:"Nice catch! You saved the game."},
+{w:"ceiling",c:"天花板",s:"The ball almost hit the ceiling."},
+{w:"centre",c:"中心",s:"The sports centre opens at eight."},
+{w:"century",c:"世纪",s:"This story happens in the next century."},
+{w:"certain",c:"确定的",s:"I am certain we will win."},
+{w:"chair",c:"椅子",e:"🪑",s:"The drum chair is too high for me."},
+{w:"change",c:"改变;零钱",s:"The coach changed the plan at half time."},
+{w:"cheap",c:"便宜的",s:"These comics are cheap and fun."},
+{w:"check",c:"检查",e:"✅",s:"Check your bag before you leave."},
+{w:"cheese",c:"奶酪",e:"🧀",s:"Extra cheese on my pizza, please."},
+{w:"chemist",c:"药店;药剂师",e:"💊",s:"Buy the medicine at the chemist."},
+{w:"chess",c:"国际象棋",e:"♟️",s:"Chess is a battle for the brain."},
+{w:"chicken",c:"鸡;鸡肉",e:"🍗",s:"Chicken and rice before the big match."},
+{w:"child",c:"孩子",e:"🧒",s:"Every child gets a free ticket."},
+{w:"chips",c:"薯条",e:"🍟",s:"The shark in the story wanted chips."},
+{w:"chocolate",c:"巧克力",e:"🍫",s:"Hot chocolate after training in winter."},
+{w:"choose",c:"选择",s:"Choose your player and start the game."},
+{w:"cinema",c:"电影院",e:"🎬",s:"The new space film is at the cinema."},
+{w:"circle",c:"圆圈",e:"⭕",s:"The team stood in a circle."},
+{w:"city",c:"城市",e:"🏙️",s:"The robot city shines at night."},
+{w:"class",c:"班级;课",s:"Music class is my favourite."},
+{w:"classroom",c:"教室",s:"Our classroom has a world map."},
+{w:"clean",c:"干净的;打扫",e:"🧹",s:"Clean your room before gaming."},
+{w:"clear",c:"清楚的;晴朗的",s:"The sky was clear for the night flight."},
+{w:"clever",c:"聪明的",e:"🧠",s:"A fox is a clever animal."},
+{w:"climb",c:"爬;攀登",e:"🧗",s:"We climbed to the top of the hill."},
+{w:"clock",c:"时钟",e:"⏰",s:"The clock on the wall is five minutes fast."},
+{w:"close",c:"关闭;近的",s:"Close the window, it is cold."},
+{w:"clothes",c:"衣服",e:"👕",s:"Pack warm clothes for the trip."},
+{w:"cloud",c:"云",e:"☁️",s:"The plane flew above the clouds."},
+{w:"club",c:"俱乐部",s:"He joined the school drum club."},
+{w:"coach",c:"教练",s:"The coach believes in our team."},
+{w:"coast",c:"海岸",s:"The road runs along the coast."},
+{w:"coat",c:"外套",e:"🧥",s:"The goat in the story wears a coat."},
+{w:"coffee",c:"咖啡",e:"☕",s:"Mum needs coffee every morning."},
+{w:"cold",c:"冷的;感冒",e:"🥶",s:"He caught a cold after the rain."},
+{w:"collect",c:"收集",s:"I collect comic books and game cards."},
+{w:"college",c:"学院",s:"My cousin studies music at college."},
+{w:"colour",c:"颜色",e:"🌈",s:"What colour is your team shirt?"},
+{w:"comb",c:"梳子;梳头",s:"Comb your hair before the photo."},
+{w:"comfortable",c:"舒服的",s:"This chair is comfortable for reading."},
+{w:"comic",c:"漫画",e:"📚",s:"He read the same comic five times."},
+{w:"common",c:"常见的;共同的",s:"Rain is common here in spring."},
+{w:"compare",c:"比较",s:"Compare the two answers and choose."},
+{w:"competition",c:"比赛;竞赛",e:"🏆",s:"The drum competition is next month."},
+{w:"complete",c:"完成;完整的",s:"Complete the level to win a star."},
+{w:"computer",c:"电脑",e:"💻",s:"The computer in the story can dream."},
+{w:"concert",c:"音乐会",e:"🎵",s:"Our band gives a concert in June."},
+{w:"conversation",c:"对话",e:"💬",s:"They had a long conversation about space."},
+{w:"cook",c:"烹饪;厨师",e:"🍳",s:"Dad cooks noodles on Sundays."},
+{w:"cooker",c:"炉灶",s:"The soup is on the cooker."},
+{w:"cool",c:"凉爽的;酷的",e:"😎",s:"Your new drum kit looks so cool."},
+{w:"corner",c:"角落",s:"Run to the corner and catch the ball."},
+{w:"correct",c:"正确的",e:"✅",s:"All your answers are correct!"},
+{w:"cost",c:"花费;价格",e:"💰",s:"How much does the ticket cost?"},
+{w:"cough",c:"咳嗽",e:"🤧",s:"He stayed home because of a bad cough."},
+{w:"count",c:"数数",e:"🔢",s:"Count to four and start the beat."},
+{w:"country",c:"国家;乡村",s:"Which country do you want to visit?"},
+{w:"countryside",c:"乡村;郊外",s:"The countryside is quiet and green."},
+{w:"course",c:"课程;当然",s:"Of course you can join our team!"},
+{w:"cousin",c:"堂/表兄弟姐妹",s:"My cousin taught me this game."},
+{w:"cover",c:"覆盖;封面",s:"The comic cover shows a robot cat."},
+{w:"crazy",c:"疯狂的",e:"🤪",s:"The crowd went crazy after the goal."},
+{w:"cream",c:"奶油",e:"🍦",s:"Ice cream after the win!"},
+{w:"credit card",c:"信用卡",e:"💳",s:"Dad paid with his credit card."},
+{w:"cross",c:"穿过;十字",s:"Cross the road at the lights."},
+{w:"crowd",c:"人群",s:"The crowd cheered for the Rockets."},
+{w:"cry",c:"哭",e:"😢",s:"Do not cry, we will win next time."},
+{w:"cup",c:"杯子;奖杯",e:"🏆",s:"Our team wants the gold cup."},
+{w:"cupboard",c:"橱柜",s:"The snacks are in the cupboard."},
+{w:"curly",c:"卷曲的",s:"The new drummer has curly hair."},
+{w:"customer",c:"顾客",s:"The shop was full of customers."},
+{w:"cut",c:"切;剪",e:"✂️",s:"Cut the cake into eight pieces."},
+{w:"dance",c:"跳舞",e:"💃",s:"The robot dances when Max drums."},
+{w:"dangerous",c:"危险的",e:"⚠️",s:"That road is dangerous at night."},
+{w:"dark",c:"黑暗的",e:"🌑",s:"Stars shine best when the sky is dark."},
+{w:"date",c:"日期",e:"📅",s:"What is the date of the final?"},
+{w:"daughter",c:"女儿",s:"Their daughter plays the guitar."},
+{w:"dear",c:"亲爱的",s:"Dear Sam, thank you for the comic."},
+{w:"decide",c:"决定",s:"We decided to train one more hour."},
+{w:"deep",c:"深的",s:"Take a deep breath before you play."},
+{w:"delicious",c:"美味的",e:"😋",s:"Grandma's dumplings are delicious."},
+{w:"dentist",c:"牙医",e:"🦷",s:"I visit the dentist twice a year."},
+{w:"desert",c:"沙漠",e:"🏜️",s:"The story robot walked across the desert."},
+{w:"design",c:"设计",e:"✏️",s:"He designed a new team logo."},
+{w:"desk",c:"书桌",s:"His desk is covered with comics."},
+{w:"dictionary",c:"词典",e:"📖",s:"Check the new word in a dictionary."},
+{w:"die",c:"死;熄灭",s:"My game player never dies on easy mode."},
+{w:"difference",c:"差别",s:"Practice makes the difference."},
+{w:"different",c:"不同的",s:"Every drum makes a different sound."},
+{w:"difficult",c:"困难的",s:"The last level is really difficult."},
+{w:"dinner",c:"晚餐",e:"🍽️",s:"We talk about the game at dinner."},
+{w:"dirty",c:"脏的",s:"His shoes were dirty after the match."},
+{w:"disco",c:"迪斯科舞会",e:"🪩",s:"The school disco is on Friday."},
+{w:"dish",c:"盘子;菜肴",s:"Wash the dishes after dinner, please."},
+{w:"doctor",c:"医生",e:"🩺",s:"The doctor said rest for two days."},
+{w:"double",c:"双倍的",s:"Double points on the last question!"},
+{w:"download",c:"下载",e:"⬇️",s:"Download the map before the trip."},
+{w:"downstairs",c:"楼下",s:"Breakfast is ready downstairs."},
+{w:"draw",c:"画;平局",e:"✏️",s:"He draws his own comic heroes."},
+{w:"dream",c:"梦;梦想",e:"💭",s:"His dream is a concert on the moon."},
+{w:"dress",c:"连衣裙;穿衣",e:"👗",s:"She wore a blue dress to the party."},
+{w:"drink",c:"喝;饮料",e:"🥤",s:"Drink water during the game."},
+{w:"drive",c:"驾驶",e:"🚗",s:"Dad drives us to training on Sunday."},
+{w:"driver",c:"司机",s:"The bus driver knows everyone's stop."},
+{w:"drop",c:"掉落",s:"Do not drop the sticks during the solo."},
+{w:"drum",c:"鼓",e:"🥁",s:"The drum is the heartbeat of the band."},
+{w:"dry",c:"干的;弄干",s:"Keep your shoes dry in the rain."},
+{w:"during",c:"在…期间",s:"No phones during the lesson."},
+{w:"early",c:"早的",s:"Arrive early to warm up."},
+{w:"earn",c:"赚取",e:"💰",s:"He earns stars by finishing levels."},
+{w:"earth",c:"地球",e:"🌍",s:"Bolt came to Earth from the future."},
+{w:"east",c:"东方",e:"🧭",s:"The sun rises in the east."},
+{w:"easy",c:"容易的",s:"The first level is easy for him."},
+{w:"eat",c:"吃",e:"🍴",s:"Eat well, play well, says the coach."},
+{w:"egg",c:"鸡蛋",e:"🥚",s:"Two eggs and toast for breakfast."},
+{w:"elephant",c:"大象",e:"🐘",s:"An elephant never forgets, they say."},
+{w:"elevator",c:"电梯",e:"🛗",s:"Take the elevator to the fifth floor."},
+{w:"else",c:"其他;别的",s:"What else do we need for the trip?"},
+{w:"email",c:"电子邮件",e:"📧",s:"Send the coach an email tonight."},
+{w:"empty",c:"空的",s:"The stadium was empty after the game."},
+{w:"end",c:"结束;末端",s:"The best part is at the end of the film."},
+{w:"engine",c:"发动机",e:"⚙️",s:"The rocket engine roared like drums."},
+{w:"engineer",c:"工程师",e:"👷",s:"An engineer fixed the robot's arm."},
+{w:"enjoy",c:"享受;喜欢",e:"😊",s:"Enjoy the game, win or lose."},
+{w:"enough",c:"足够的",s:"We have enough players for two teams."},
+{w:"enter",c:"进入;报名参加",s:"Our band entered the music competition."},
+{w:"envelope",c:"信封",e:"✉️",s:"Put the letter in the envelope."},
+{w:"eraser",c:"橡皮擦",s:"Can I borrow your eraser?"},
+{w:"evening",c:"傍晚;晚上",e:"🌆",s:"We practise drums in the evening."},
+{w:"every",c:"每一个",s:"Every drummer starts as a learner."},
+{w:"everybody",c:"每个人",s:"Everybody cheered at the last second."},
+{w:"everything",c:"一切",s:"Everything is ready for the show."},
+{w:"everywhere",c:"到处",s:"There were fans everywhere."},
+{w:"exam",c:"考试",e:"📝",s:"The exam is easier if you read a lot."},
+{w:"example",c:"例子",s:"Give me an example, please."},
+{w:"excellent",c:"极好的",e:"🌟",s:"Excellent pass! That won the game."},
+{w:"excited",c:"兴奋的",e:"🤩",s:"He is excited about the space film."},
+{w:"exciting",c:"令人兴奋的",s:"The last five minutes were so exciting."},
+{w:"excuse",c:"借口;原谅",s:"Excuse me, where is the sports hall?"},
+{w:"exercise",c:"锻炼;练习",e:"🏃",s:"Drumming is good exercise for arms."},
+{w:"expensive",c:"昂贵的",e:"💎",s:"That drum kit is too expensive."},
+{w:"explain",c:"解释",s:"The coach explained the new play."},
+{w:"extra",c:"额外的",s:"Extra practice, extra progress."},
+{w:"face",c:"脸",e:"🙂",s:"Put on a brave face and play."},
+{w:"fact",c:"事实",s:"Here is a fun fact about space."},
+{w:"factory",c:"工厂",e:"🏭",s:"The robot was built in a toy factory."},
+{w:"fail",c:"失败;不及格",s:"Fail, learn, try again."},
+{w:"fall",c:"落下;秋天",e:"🍂",s:"Do not fall on the wet floor."},
+{w:"famous",c:"著名的",e:"⭐",s:"He wants to be a famous drummer."},
+{w:"fan",c:"粉丝;风扇",s:"The fans sang for the whole match."},
+{w:"fantastic",c:"极好的",s:"What a fantastic drum solo!"},
+{w:"far",c:"远的",s:"The stadium is not far from home."},
+{w:"farm",c:"农场",e:"🚜",s:"The team trained at a farm last week."},
+{w:"farmer",c:"农民",e:"👨‍🌾",s:"The farmer gave us fresh apples."},
+{w:"fast",c:"快的",e:"⚡",s:"He plays fast but never loses the beat."},
+{w:"fat",c:"胖的",s:"The cat in the comic is fat and lazy."},
+{w:"favourite",c:"最喜欢的",e:"❤️",s:"Science fiction is my favourite kind of book."},
+{w:"feed",c:"喂养",s:"Feed the fish before school."},
+{w:"feel",c:"感觉",s:"I feel strong after good sleep."},
+{w:"festival",c:"节日",e:"🎉",s:"The music festival is in summer."},
+{w:"fever",c:"发烧",e:"🤒",s:"He stayed home with a fever."},
+{w:"few",c:"很少的",s:"Only a few tickets are left."},
+{w:"field",c:"田野;球场",s:"The field was wet but we played anyway."},
+{w:"fight",c:"打架;战斗",s:"The heroes fight the space monster."},
+{w:"fill",c:"填满",s:"Fill the bottle before training."},
+{w:"film",c:"电影",e:"🎬",s:"The new robot film comes out Friday."},
+{w:"find",c:"找到",e:"🔍",s:"Find the hidden key in level three."},
+{w:"fine",c:"好的;罚款",s:"I feel fine, just a little tired."},
+{w:"finger",c:"手指",s:"Drummers need strong fingers."},
+{w:"finish",c:"完成;结束",e:"🏁",s:"Finish your homework, then game time."},
+{w:"fire",c:"火",e:"🔥",s:"The team is on fire tonight!"},
+{w:"first",c:"第一;首先",e:"🥇",s:"First warm up, then play."},
+{w:"fish",c:"鱼",e:"🐟",s:"The shy fish shines like a lamp."},
+{w:"fit",c:"健康的;合身",s:"Training keeps you fit and fast."},
+{w:"fix",c:"修理",e:"🔧",s:"Bolt can fix anything in five minutes."},
+{w:"flag",c:"旗;夺旗",e:"🚩",s:"Grab the flag and run!"},
+{w:"flat",c:"公寓;平的",s:"They moved to a flat near the park."},
+{w:"flight",c:"航班;飞行",e:"🛫",s:"Our flight leaves at six in the morning."},
+{w:"floor",c:"地板;楼层",s:"The music room is on the second floor."},
+{w:"flower",c:"花",e:"🌸",s:"He gave Mum flowers on her birthday."},
+{w:"fly",c:"飞",e:"🛸",s:"In the dream, the drum kit could fly."},
+{w:"fog",c:"雾",e:"🌫️",s:"The match started late because of fog."},
+{w:"follow",c:"跟随",s:"Follow the captain to the field."},
+{w:"food",c:"食物",e:"🍱",s:"Good food, good energy, good game."},
+{w:"foot",c:"脚",e:"🦶",s:"He hurt his foot but kept smiling."},
+{w:"football",c:"足球;橄榄球",e:"🏈",s:"Flag football is fast and safe."},
+{w:"foreign",c:"外国的",s:"She speaks two foreign languages."},
+{w:"forest",c:"森林",e:"🌲",s:"The game map has a dark forest."},
+{w:"forget",c:"忘记",s:"Never forget your water bottle."},
+{w:"fork",c:"叉子",e:"🍴",s:"Fork on the left, knife on the right."},
+{w:"free",c:"免费的;自由的",s:"Kids under five watch for free."},
+{w:"fresh",c:"新鲜的",s:"Fresh air helps you think."},
+{w:"fridge",c:"冰箱",e:"🧊",s:"The juice is in the fridge."},
+{w:"friendly",c:"友好的",e:"😊",s:"The new player is friendly to everyone."},
+{w:"frog",c:"青蛙",e:"🐸",s:"The frog in the game jumps double."},
+{w:"front",c:"前面",s:"Meet me in front of the cinema."},
+{w:"fruit",c:"水果",e:"🍎",s:"Fruit first, candy later."},
+{w:"full",c:"满的",s:"The stadium was full an hour early."},
+{w:"funny",c:"有趣的;好笑的",e:"😂",s:"This comic is the funniest one yet."},
+{w:"future",c:"未来",e:"🔮",s:"Bolt is a robot fox from the future."},
+{w:"game",c:"游戏;比赛",e:"🎮",s:"One more game, then bed."},
+{w:"garden",c:"花园",e:"🌷",s:"We practise passes in the garden."},
+{w:"gate",c:"大门;登机口",s:"The team bus waits at the gate."},
+{w:"geography",c:"地理",e:"🗺️",s:"We drew maps in geography class."},
+{w:"gift",c:"礼物",e:"🎁",s:"The best gift was a comic box set."},
+{w:"give",c:"给",s:"Give me five! Great game!"},
+{w:"glass",c:"玻璃;玻璃杯",e:"🥛",s:"A glass of milk before bed."},
+{w:"glasses",c:"眼镜",e:"👓",s:"He wears glasses when he reads."},
+{w:"glove",c:"手套",e:"🧤",s:"Warm gloves for winter training."},
+{w:"goal",c:"进球;目标",e:"🥅",s:"His goal is the school team this year."},
+{w:"gold",c:"金子;金色的",e:"🥇",s:"The winners get a gold cup."},
+{w:"golf",c:"高尔夫",e:"⛳",s:"Grandpa plays golf on Sundays."},
+{w:"grass",c:"草",e:"🌱",s:"The grass was wet after the rain."},
+{w:"great",c:"很棒的",e:"👍",s:"Great pass! Great catch! Great game!"},
+{w:"ground",c:"地面",s:"The ball bounced twice on the ground."},
+{w:"group",c:"组;群",s:"Work in groups of four."},
+{w:"grow",c:"生长;种植",e:"🌱",s:"Plants grow faster in spring."},
+{w:"guess",c:"猜",e:"🤔",s:"Guess who won the drum competition!"},
+{w:"guest",c:"客人",s:"We have guests for dinner tonight."},
+{w:"guitar",c:"吉他",e:"🎸",s:"Drums and guitar make a band."},
+{w:"gym",c:"体育馆;健身房",e:"🏋️",s:"Training moves to the gym in winter."},
+{w:"hair",c:"头发",e:"💇",s:"His hair gets wild when he drums."},
+{w:"half",c:"一半",s:"We were losing at half time."},
+{w:"hall",c:"大厅",s:"The concert is in the school hall."},
+{w:"happen",c:"发生",s:"What happened in the last chapter?"},
+{w:"happy",c:"快乐的",e:"😄",s:"A win makes the whole team happy."},
+{w:"hard",c:"困难的;硬的",s:"Hard levels make you better."},
+{w:"hate",c:"讨厌",s:"I hate rainy match days."},
+{w:"headache",c:"头痛",e:"🤕",s:"Too much screen time gives me a headache."},
+{w:"health",c:"健康",s:"Sleep is important for your health."},
+{w:"healthy",c:"健康的",e:"🥗",s:"Healthy food, strong body."},
+{w:"hear",c:"听见",e:"👂",s:"Can you hear the drums from here?"},
+{w:"heart",c:"心脏;内心",e:"❤️",s:"Play with all your heart."},
+{w:"heavy",c:"重的",s:"The drum case is heavy, help me."},
+{w:"help",c:"帮助",e:"🤝",s:"Teammates always help each other."},
+{w:"hero",c:"英雄",e:"🦸",s:"Every comic needs a hero."},
+{w:"hide",c:"躲藏;隐藏",s:"The key is hidden behind the waterfall."},
+{w:"high",c:"高的",s:"He can jump really high."},
+{w:"hill",c:"小山",e:"⛰️",s:"We ride bikes up the hill for training."},
+{w:"history",c:"历史",e:"📜",s:"The history of drums is very long."},
+{w:"hobby",c:"爱好",s:"His hobbies are drums and football."},
+{w:"hockey",c:"曲棍球",e:"🏒",s:"Ice hockey is fast and loud."},
+{w:"hold",c:"拿着;举行",s:"Hold the sticks like this."},
+{w:"hole",c:"洞",e:"🕳️",s:"There is a hole in my sock."},
+{w:"holiday",c:"假期",e:"🏖️",s:"Where are you going for the holidays?"},
+{w:"homework",c:"作业",e:"📓",s:"Homework first, then drum practice."},
+{w:"hope",c:"希望",s:"I hope we can be friends, said Bolt."},
+{w:"horrible",c:"糟糕的;可怕的",s:"The weather was horrible on match day."},
+{w:"horse",c:"马",e:"🐴",s:"The farm horse watched our training."},
+{w:"hospital",c:"医院",e:"🏥",s:"The hospital is across the bridge."},
+{w:"hot",c:"热的",e:"🥵",s:"Drink more water on hot days."},
+{w:"hotel",c:"酒店",e:"🏨",s:"The team stayed at a hotel near the sea."},
+{w:"hour",c:"小时",e:"⏰",s:"One hour of practice every day."},
+{w:"house",c:"房子",e:"🏠",s:"His house is full of music."},
+{w:"hungry",c:"饥饿的",e:"😋",s:"Training makes everyone hungry."},
+{w:"hurry",c:"赶快",e:"🏃",s:"Hurry, the bus leaves in five minutes!"},
+{w:"hurt",c:"受伤;疼",s:"My legs hurt after the long run."},
+{w:"husband",c:"丈夫",s:"Her husband is our team coach."},
+{w:"ice",c:"冰",e:"🧊",s:"Put some ice on your knee."},
+{w:"idea",c:"主意",e:"💡",s:"Bolt always has a crazy idea."},
+{w:"ill",c:"生病的",e:"🤒",s:"He was ill and missed the show."},
+{w:"important",c:"重要的",s:"Sleep is as important as practice."},
+{w:"information",c:"信息",e:"ℹ️",s:"The website has all the match information."},
+{w:"insect",c:"昆虫",e:"🐜",s:"He collects pictures of strange insects."},
+{w:"inside",c:"在里面",s:"It rained, so we trained inside."},
+{w:"instrument",c:"乐器",e:"🎺",s:"The drum was his first instrument."},
+{w:"interested",c:"感兴趣的",s:"She is interested in space robots."},
+{w:"interesting",c:"有趣的",s:"This book gets more interesting every page."},
+{w:"internet",c:"互联网",e:"🌐",s:"He found the drum lesson on the internet."},
+{w:"interview",c:"采访;面试",e:"🎤",s:"They interviewed the team captain."},
+{w:"invite",c:"邀请",e:"💌",s:"Invite the whole team to the party."},
+{w:"island",c:"岛屿",e:"🏝️",s:"The game ends on a secret island."},
+{w:"jacket",c:"夹克",e:"🧥",s:"The team jacket is blue and gold."},
+{w:"jam",c:"果酱",e:"🍓",s:"Toast with jam for breakfast."},
+{w:"job",c:"工作",s:"His dream job is game designer."},
+{w:"join",c:"加入",s:"Roy joined his friends to enjoy the coin."},
+{w:"joke",c:"笑话",e:"😄",s:"The captain tells a joke before every game."},
+{w:"journey",c:"旅程",s:"The journey to the final was long."},
+{w:"juice",c:"果汁",e:"🧃",s:"Orange juice after the morning run."},
+{w:"jump",c:"跳",e:"🦘",s:"Jump higher than the frog in level two."},
+{w:"keep",c:"保持;保留",s:"Keep the beat, keep the smile."},
+{w:"key",c:"钥匙;关键",e:"🔑",s:"The gold key opens the last door."},
+{w:"kick",c:"踢",s:"Kick the ball to the corner."},
+{w:"kill",c:"杀死;消灭",s:"The hero killed the game boss at last."},
+{w:"kind",c:"友善的;种类",s:"Be kind to the new players."},
+{w:"kitchen",c:"厨房",e:"🍳",s:"The kitchen smells like dumplings."},
+{w:"kite",c:"风筝",e:"🪁",s:"Five bright kites flew at night."},
+{w:"knee",c:"膝盖",e:"🦵",s:"Wear pads to protect your knees."},
+{w:"knife",c:"刀",e:"🔪",s:"Careful with the kitchen knife."},
+{w:"knock",c:"敲",e:"🚪",s:"Knock before you enter, please."},
+{w:"know",c:"知道;认识",s:"I know every word of this comic."},
+{w:"lake",c:"湖",e:"🏞️",s:"Mike rode his bike past a lake."},
+{w:"lamp",c:"台灯",e:"💡",s:"The shy fish shines like a lamp."},
+{w:"language",c:"语言",e:"🗣️",s:"Music is a language everyone understands."},
+{w:"large",c:"大的",s:"A large pizza for the whole team."},
+{w:"last",c:"最后的;持续",s:"The last level is the best."},
+{w:"late",c:"迟到的;晚的",e:"⏰",s:"Max is never late for band practice."},
+{w:"laugh",c:"笑",e:"😆",s:"His jokes make the whole team laugh."},
+{w:"lazy",c:"懒惰的",e:"🦥",s:"The comic cat is fat and lazy."},
+{w:"learn",c:"学习",e:"📖",s:"You learn faster when it is fun."},
+{w:"leave",c:"离开;留下",s:"The bus leaves at eight sharp."},
+{w:"left",c:"左边",e:"⬅️",s:"Run left, then cut right."},
+{w:"leg",c:"腿",e:"🦵",s:"Strong legs win the running game."},
+{w:"lemon",c:"柠檬",e:"🍋",s:"Lemon water on a hot day."},
+{w:"lesson",c:"课程",s:"Drum lessons are on Wednesday."},
+{w:"letter",c:"信;字母",e:"✉️",s:"Gail carried an urgent letter by boat."},
+{w:"library",c:"图书馆",e:"📚",s:"The library has the whole comic series."},
+{w:"lie",c:"躺;说谎",s:"Lie down and look at the stars."},
+{w:"life",c:"生活;生命",s:"Music makes life brighter."},
+{w:"lift",c:"电梯;举起",s:"Lift with your legs, not your back."},
+{w:"light",c:"光;轻的",e:"💡",s:"A bright light crossed the night sky."},
+{w:"line",c:"线;队伍",s:"Stand behind the line before the whistle."},
+{w:"lion",c:"狮子",e:"🦁",s:"The lion in the story could sing."},
+{w:"listen",c:"听",e:"🎧",s:"Listen to the beat before you play."},
+{w:"little",c:"小的;少的",s:"A little practice every day wins."},
+{w:"live",c:"居住;活的",s:"They live near the sports centre."},
+{w:"lonely",c:"孤独的",s:"The robot was lonely before he found friends."},
+{w:"long",c:"长的",s:"It was a long game but we won."},
+{w:"look",c:"看",e:"👀",s:"Look! A shooting star!"},
+{w:"lose",c:"失去;输",s:"Lose a game, learn a lesson."},
+{w:"loud",c:"大声的",e:"🔊",s:"Drums are loud and proud."},
+{w:"love",c:"爱;热爱",e:"❤️",s:"He loves every page of that comic."},
+{w:"low",c:"低的",s:"Keep the ball low and fast."},
+{w:"lucky",c:"幸运的",e:"🍀",s:"Seven is his lucky number."},
+{w:"lunch",c:"午餐",e:"🍱",s:"Chad played chess at lunch."},
+{w:"machine",c:"机器",e:"🤖",s:"Bolt has a wish machine in his bag."},
+{w:"magazine",c:"杂志",e:"📰",s:"The music magazine had a drum poster."},
+{w:"mail",c:"邮件",e:"📬",s:"Gail brings the mail along the coast."},
+{w:"main",c:"主要的",s:"The main gate opens at nine."},
+{w:"make",c:"制作;使",s:"They made a video game together."},
+{w:"man",c:"男人",s:"The man at the shop knows all the comics."},
+{w:"map",c:"地图",e:"🗺️",s:"The game map hides three secrets."},
+{w:"market",c:"市场",e:"🛒",s:"The market sells fresh fruit on Sunday."},
+{w:"match",c:"比赛;火柴",s:"The final match is this Saturday."},
+{w:"maths",c:"数学",e:"➗",s:"Thero the robot thinks in maths."},
+{w:"maybe",c:"也许",s:"Maybe we can win the cup this year."},
+{w:"meal",c:"一餐",e:"🍽️",s:"The team eats a big meal after training."},
+{w:"mean",c:"意思是;刻薄的",s:"What does this word mean?"},
+{w:"meat",c:"肉",e:"🥩",s:"No meat for me, thanks, just vegetables."},
+{w:"medicine",c:"药",e:"💊",s:"Take the medicine after dinner."},
+{w:"meet",c:"遇见;见面",s:"Meet me at the gym at four."},
+{w:"meeting",c:"会议",s:"The team meeting is before the game."},
+{w:"member",c:"成员",s:"He is the newest member of the band."},
+{w:"menu",c:"菜单",e:"📋",s:"The menu has ten kinds of noodles."},
+{w:"message",c:"消息;留言",e:"💬",s:"The page showed a secret message."},
+{w:"metal",c:"金属",s:"The robot's arm is made of metal."},
+{w:"midnight",c:"午夜",e:"🌙",s:"They flew kites until midnight."},
+{w:"milk",c:"牛奶",e:"🥛",s:"Warm milk helps you sleep."},
+{w:"mind",c:"介意;头脑",s:"Do you mind if I sit here?"},
+{w:"minute",c:"分钟",s:"Five more minutes of game time, please!"},
+{w:"mirror",c:"镜子",e:"🪞",s:"He practises his drum face in the mirror."},
+{w:"miss",c:"错过;想念",s:"Never miss a Saturday training."},
+{w:"mistake",c:"错误",s:"A mistake is a chance to learn."},
+{w:"mobile",c:"手机",e:"📱",s:"No mobiles at the dinner table."},
+{w:"model",c:"模型;模特",s:"He built a model rocket last week."},
+{w:"modern",c:"现代的",s:"The new gym is big and modern."},
+{w:"moment",c:"片刻;时刻",s:"Wait a moment, I am almost done."},
+{w:"money",c:"钱",e:"💰",s:"He saves money for new drumsticks."},
+{w:"monkey",c:"猴子",e:"🐒",s:"The game monkey steals your bananas."},
+{w:"month",c:"月份",s:"The competition is next month."},
+{w:"moon",c:"月亮",e:"🌕",s:"The ship landed on the moon at noon."},
+{w:"morning",c:"早晨",e:"🌅",s:"Morning runs make the team strong."},
+{w:"mountain",c:"山",e:"🏔️",s:"The story hero lives on a mountain."},
+{w:"mouse",c:"老鼠;鼠标",e:"🐭",s:"The comic mouse is smarter than the cat."},
+{w:"mouth",c:"嘴",e:"👄",s:"Open your mouth and say ah."},
+{w:"move",c:"移动;搬家",s:"Move fast, think faster."},
+{w:"movie",c:"电影",e:"🎬",s:"The space movie was two hours long."},
+{w:"museum",c:"博物馆",e:"🏛️",s:"The museum has a real spaceship."},
+{w:"music",c:"音乐",e:"🎵",s:"Music is his favourite part of the day."},
+{w:"musician",c:"音乐家",e:"🎷",s:"A drummer is a musician of rhythm."},
+{w:"near",c:"附近的",s:"The pool is near the library."},
+{w:"nearly",c:"几乎",s:"We nearly won, next time for sure."},
+{w:"neck",c:"脖子",s:"Warm up your neck before you drum."},
+{w:"need",c:"需要",s:"Every team needs a good captain."},
+{w:"neighbour",c:"邻居",s:"Our neighbour lends us his football."},
+{w:"nervous",c:"紧张的",e:"😬",s:"He felt nervous before the solo."},
+{w:"never",c:"从不",s:"Never give up at the last level."},
+{w:"new",c:"新的",e:"✨",s:"The new comic comes out today!"},
+{w:"news",c:"新闻;消息",e:"📰",s:"Good news: the match is on!"},
+{w:"newspaper",c:"报纸",s:"Grandpa reads the newspaper with tea."},
+{w:"next",c:"下一个",s:"Next stop: the final!"},
+{w:"nice",c:"好的;友好的",s:"Nice catch, Chad! said the coach."},
+{w:"night",c:"夜晚",e:"🌃",s:"At night the robot city glows."},
+{w:"nobody",c:"没有人",s:"Nobody knew the secret door."},
+{w:"noise",c:"噪音",e:"📢",s:"The coin made a joyful noise."},
+{w:"noisy",c:"吵闹的",s:"The classroom got noisy before the bell."},
+{w:"noodles",c:"面条",e:"🍜",s:"A big bowl of noodles after the match."},
+{w:"north",c:"北方",e:"🧭",s:"Cora runs north with the Rockets."},
+{w:"nose",c:"鼻子",e:"👃",s:"The robot fox has a shiny nose."},
+{w:"note",c:"便条;音符",e:"📝",s:"The boy wrote a note: welcome home."},
+{w:"nothing",c:"没有什么",s:"Nothing stops this team today."},
+{w:"number",c:"数字;号码",e:"🔢",s:"Seven is his shirt number."},
+{w:"nurse",c:"护士",e:"👩‍⚕️",s:"The nurse checked his knee."},
+{w:"ocean",c:"海洋",e:"🌊",s:"The story submarine crossed the ocean."},
+{w:"office",c:"办公室",e:"🏢",s:"Mum works in an office downtown."},
+{w:"often",c:"经常",s:"How often do you practise drums?"},
+{w:"oil",c:"油",e:"🛢️",s:"The coin sounds like oil in a hot pan."},
+{w:"old",c:"老的;旧的",s:"His old sticks are his lucky sticks."},
+{w:"once",c:"一次;曾经",s:"Once a week we train at the farm."},
+{w:"onion",c:"洋葱",e:"🧅",s:"No onion on my burger, please."},
+{w:"online",c:"在线的",e:"🌐",s:"They play online with friends abroad."},
+{w:"only",c:"仅仅;唯一的",s:"Only one level left!"},
+{w:"open",c:"打开;开放的",s:"The gym opens at seven."},
+{w:"opposite",c:"相反的;对面",s:"The bank is opposite the cinema."},
+{w:"orange",c:"橙子;橙色",e:"🍊",s:"Orange juice for the whole team."},
+{w:"order",c:"命令;点餐",s:"The coach gave a short order: run!"},
+{w:"other",c:"其他的",s:"The other team was strong but slow."},
+{w:"outside",c:"在外面",s:"The sun is out, let us train outside."},
+{w:"own",c:"自己的;拥有",s:"He wrote his own comic story."},
+{w:"page",c:"页",e:"📄",s:"The last page has a surprise."},
+{w:"paint",c:"油漆;绘画",e:"🖌️",s:"They painted the team logo on the wall."},
+{w:"pair",c:"一对;一双",s:"A new pair of running shoes."},
+{w:"paper",c:"纸",e:"📄",s:"Fold the paper into a plane."},
+{w:"parent",c:"父母",s:"Parents watch from the side line."},
+{w:"park",c:"公园;停车",e:"🌳",s:"Bolt parked a star car in the yard."},
+{w:"part",c:"部分;角色",s:"The drum solo is the best part."},
+{w:"party",c:"聚会",e:"🎉",s:"Pizza party after the final!"},
+{w:"pass",c:"传球;通过",s:"A perfect pass won the game."},
+{w:"passenger",c:"乘客",s:"The bus was full of sleepy passengers."},
+{w:"passport",c:"护照",e:"🛂",s:"Check your passport before the trip."},
+{w:"past",c:"过去;经过",s:"Run past the tree and turn left."},
+{w:"pay",c:"支付",e:"💳",s:"Dad paid for the tickets online."},
+{w:"pencil",c:"铅笔",e:"✏️",s:"Draw the plan with a pencil first."},
+{w:"people",c:"人们",e:"👥",s:"Five hundred people watched the show."},
+{w:"pepper",c:"胡椒;辣椒",e:"🌶️",s:"A little pepper makes the soup better."},
+{w:"perfect",c:"完美的",e:"💯",s:"The bird flew in a perfect circle."},
+{w:"perhaps",c:"或许",s:"Perhaps the robot can help us."},
+{w:"person",c:"人",s:"He is the funniest person in class."},
+{w:"pet",c:"宠物",e:"🐾",s:"His pet fish shines in the dark."},
+{w:"phone",c:"电话",e:"📱",s:"Phone me after the match."},
+{w:"photo",c:"照片",e:"📸",s:"Team photo after the win!"},
+{w:"piano",c:"钢琴",e:"🎹",s:"She plays piano, he plays drums."},
+{w:"picnic",c:"野餐",e:"🧺",s:"A picnic by the lake on Sunday."},
+{w:"picture",c:"图画;照片",e:"🖼️",s:"He drew a picture of the star car."},
+{w:"piece",c:"一块;一片",s:"The last piece of cake is mine!"},
+{w:"pilot",c:"飞行员",e:"👨‍✈️",s:"The pilot said hello to the kids."},
+{w:"pink",c:"粉色",e:"🎀",s:"Her drum kit is pink and silver."},
+{w:"place",c:"地方",e:"📍",s:"Max takes his place on the stage."},
+{w:"plan",c:"计划",e:"📋",s:"Mike made a plan: nine miles before five."},
+{w:"plane",c:"飞机",e:"✈️",s:"The plane flew above the clouds."},
+{w:"planet",c:"行星",e:"🪐",s:"Race to the green planet and win."},
+{w:"plant",c:"植物;种植",e:"🪴",s:"Dee feeds the plants on the space ship."},
+{w:"plastic",c:"塑料",s:"The bottle is made of plastic."},
+{w:"plate",c:"盘子",e:"🍽️",s:"Put the dumplings on the big plate."},
+{w:"play",c:"玩;演奏;战术",s:"The last play won the game."},
+{w:"player",c:"运动员;玩家",s:"Every player matters in this team."},
+{w:"playground",c:"操场",s:"Meet at the playground after school."},
+{w:"pocket",c:"口袋",s:"The magic coin is in his pocket."},
+{w:"point",c:"分数;指向",s:"Three points for the win!"},
+{w:"police",c:"警察",e:"👮",s:"The police helped find the lost dog."},
+{w:"pool",c:"游泳池",e:"🏊",s:"The moon room has a cool pool."},
+{w:"poor",c:"贫穷的;可怜的",s:"The poor robot lost his memory."},
+{w:"popular",c:"受欢迎的",s:"Flag football is popular at our school."},
+{w:"possible",c:"可能的",s:"Is it possible to finish today?"},
+{w:"post",c:"邮寄;帖子",e:"📮",s:"Post the letter before Friday."},
+{w:"poster",c:"海报",s:"A drum hero poster hangs on his wall."},
+{w:"potato",c:"土豆",e:"🥔",s:"Baked potato with cheese, yes please."},
+{w:"practice",c:"练习",e:"🥁",s:"Practice makes the difference."},
+{w:"present",c:"礼物;现在",e:"🎁",s:"The best present was a game card."},
+{w:"pretty",c:"漂亮的;相当",s:"The night sky was pretty over the sea."},
+{w:"price",c:"价格",e:"🏷️",s:"The price of the drum kit dropped!"},
+{w:"prize",c:"奖品",e:"🏆",s:"First prize is a golden ticket."},
+{w:"problem",c:"问题",s:"No problem, Bolt can fix it."},
+{w:"programme",c:"节目;程序",s:"The space programme starts at eight."},
+{w:"project",c:"项目;课题",s:"Our science project is about robots."},
+{w:"promise",c:"承诺",e:"🤝",s:"I promise to practise every day."},
+{w:"pull",c:"拉",s:"He pulled the rope, she rowed."},
+{w:"purple",c:"紫色",e:"💜",s:"A purple beetle rings the action bell."},
+{w:"purse",c:"钱包",e:"👛",s:"Her purse is full of coins."},
+{w:"push",c:"推",s:"They all pushed the giant ball together."},
+{w:"put",c:"放置",s:"Put the sticks back in the bag."},
+{w:"question",c:"问题",e:"❓",s:"One more question, then break time."},
+{w:"quick",c:"快的",e:"⚡",s:"A quick pass beat the defence."},
+{w:"quiet",c:"安静的",e:"🤫",s:"The library is a quiet place."},
+{w:"quite",c:"相当;很",s:"The test was quite easy this time."},
+{w:"race",c:"比赛;赛跑",e:"🏁",s:"Space Race is their favourite game."},
+{w:"radio",c:"收音机",e:"📻",s:"The match was on the radio."},
+{w:"railway",c:"铁路",e:"🚉",s:"The railway station is near the gym."},
+{w:"rain",c:"雨",e:"🌧️",s:"It may rain on game day."},
+{w:"reach",c:"到达;够到",s:"Gail reached the goal in the storm."},
+{w:"read",c:"阅读",e:"📖",s:"He reads comics before sleep."},
+{w:"ready",c:"准备好的",s:"Ready? Count to four and play!"},
+{w:"real",c:"真实的",s:"The light in the sky was real."},
+{w:"really",c:"真正地;确实",s:"That solo was really amazing."},
+{w:"reason",c:"原因",s:"There is a reason he practises daily."},
+{w:"receive",c:"收到",s:"He received a medal for the win."},
+{w:"remember",c:"记得",s:"Remember your first drum lesson?"},
+{w:"repair",c:"修理",e:"🔧",s:"Bolt repaired the broken bike fast."},
+{w:"repeat",c:"重复",s:"Repeat the beat until it is perfect."},
+{w:"rest",c:"休息;其余",e:"😴",s:"Rest days make you stronger."},
+{w:"restaurant",c:"餐厅",e:"🍴",s:"The team dinner is at a noodle restaurant."},
+{w:"return",c:"返回;归还",s:"Return the book by Friday."},
+{w:"rice",c:"米饭",e:"🍚",s:"Chicken and rice before the match."},
+{w:"rich",c:"富有的",e:"💎",s:"The rich man in the comic has a robot."},
+{w:"ride",c:"骑;乘坐",e:"🚲",s:"Time for a sky ride, said Bolt."},
+{w:"right",c:"正确的;右边",s:"Cut right at the corner and catch."},
+{w:"ring",c:"戒指;打电话;响",e:"💍",s:"The bell rings, the game begins."},
+{w:"river",c:"河流",e:"🏞️",s:"The boat went slowly down the river."},
+{w:"road",c:"路",e:"🛣️",s:"The road to the final was hard."},
+{w:"rock",c:"岩石;摇滚",e:"🪨",s:"Mars has hard black rocks."},
+{w:"roof",c:"屋顶",s:"The ball landed on the roof again."},
+{w:"room",c:"房间;空间",s:"A round room popped out of the moon dust."},
+{w:"rope",c:"绳子",s:"Joan threw the rope to the boy."},
+{w:"round",c:"圆的;回合",s:"Round two starts in five minutes."},
+{w:"rugby",c:"英式橄榄球",e:"🏉",s:"Rugby and flag football are cousins."},
+{w:"rule",c:"规则",e:"📏",s:"Learn the rules, then break the level."},
+{w:"run",c:"跑",e:"🏃",s:"Run, Jay, run! shouted the crowd."},
+{w:"sad",c:"难过的",e:"😢",s:"Losing feels sad, but only for a day."},
+{w:"safe",c:"安全的",e:"🛡️",s:"Keep the ship safe and fast."},
+{w:"sail",c:"航行",e:"⛵",s:"Gail sailed past the rocks in the rain."},
+{w:"salad",c:"沙拉",e:"🥗",s:"A big salad with the pizza, please."},
+{w:"salt",c:"盐",e:"🧂",s:"A pinch of salt makes it perfect."},
+{w:"same",c:"相同的",s:"Same place next week, same team."},
+{w:"sandwich",c:"三明治",e:"🥪",s:"A cheese sandwich for the trip."},
+{w:"save",c:"拯救;储存",e:"💾",s:"Save the game before the boss fight."},
+{w:"say",c:"说",s:"They say practice makes perfect."},
+{w:"school",c:"学校",e:"🏫",s:"Our school has a music room."},
+{w:"science",c:"科学",e:"🔬",s:"Science fiction is science plus dreams."},
+{w:"scientist",c:"科学家",e:"👩‍🔬",s:"The scientist built a friendly robot."},
+{w:"scissors",c:"剪刀",e:"✂️",s:"Cut the paper with scissors."},
+{w:"score",c:"得分",e:"🎯",s:"Cora storms past four kids and scores."},
+{w:"screen",c:"屏幕",e:"🖥️",s:"Dee reads the screen and checks the seeds."},
+{w:"sea",c:"大海",e:"🌊",s:"You can see the sea from the balcony."},
+{w:"season",c:"季节;赛季",s:"The new season starts in March."},
+{w:"seat",c:"座位",e:"💺",s:"Save me a seat at the front."},
+{w:"second",c:"第二;秒",s:"He won in the last second."},
+{w:"secret",c:"秘密",e:"🤫",s:"The island hides a big secret."},
+{w:"secretary",c:"秘书",s:"The club secretary sent the email."},
+{w:"see",c:"看见",e:"👀",s:"See you at the gym at four."},
+{w:"sell",c:"卖",e:"🏷️",s:"The shop sells drumsticks and strings."},
+{w:"send",c:"发送",e:"📤",s:"Send the photo to the team chat."},
+{w:"sentence",c:"句子",s:"Read the sentence out loud."},
+{w:"share",c:"分享",e:"🤝",s:"Joy is best when you share it."},
+{w:"sheep",c:"绵羊",e:"🐑",s:"The farm sheep watched us train."},
+{w:"shelf",c:"架子",s:"Comics fill every shelf in his room."},
+{w:"shine",c:"闪耀",e:"✨",s:"The ice city shines like a gem."},
+{w:"ship",c:"船;飞船",e:"🚀",s:"The ship lands on the moon at noon."},
+{w:"shirt",c:"衬衫;球衣",e:"👕",s:"Fern turned her shirt into a nest."},
+{w:"shoe",c:"鞋",e:"👟",s:"New shoes, new speed."},
+{w:"shop",c:"商店;购物",e:"🏪",s:"A small shop shows up when you shake it."},
+{w:"shopping",c:"购物",e:"🛍️",s:"Shopping list: milk, eggs, drumsticks."},
+{w:"short",c:"短的;矮的",s:"The coach gave a short order: run!"},
+{w:"shout",c:"喊叫",e:"📣",s:"The kids all shout his name."},
+{w:"show",c:"展示;演出",e:"🎪",s:"The band will play a big show at school."},
+{w:"shower",c:"淋浴;阵雨",e:"🚿",s:"A quick shower after training."},
+{w:"shut",c:"关闭",s:"Shut the door, the wind is cold."},
+{w:"shy",c:"害羞的",e:"😊",s:"This fish is shy, said Bolt."},
+{w:"sick",c:"生病的",e:"🤢",s:"He felt sick after too much cake."},
+{w:"side",c:"边;侧面",s:"Our side of the field was muddy."},
+{w:"sign",c:"标志;签名",e:"🪧",s:"The sign says: quiet, please."},
+{w:"silver",c:"银;银色的",e:"🥈",s:"Second place gets the silver cup."},
+{w:"since",c:"自从",s:"He has played drums since he was six."},
+{w:"sing",c:"唱歌",e:"🎤",s:"The lion in the story could sing."},
+{w:"singer",c:"歌手",s:"The singer and the drummer are best friends."},
+{w:"sister",c:"姐妹",s:"His little sister loves the robot fox."},
+{w:"sit",c:"坐",e:"🪑",s:"Sit by the barn and rest your arms."},
+{w:"size",c:"尺寸",e:"📏",s:"What size are your football shoes?"},
+{w:"skate",c:"滑冰",e:"⛸️",s:"They skate on the lake in winter."},
+{w:"ski",c:"滑雪",e:"🎿",s:"We learned to ski last winter."},
+{w:"skirt",c:"裙子",s:"Her school skirt is dark blue."},
+{w:"sky",c:"天空",e:"🌌",s:"Five bright dots crossed the night sky."},
+{w:"sleep",c:"睡觉",e:"😴",s:"Good sleep is secret training."},
+{w:"slow",c:"慢的",e:"🐢",s:"The boat starts to slow, row harder!"},
+{w:"small",c:"小的",s:"A small toy, but a big point."},
+{w:"smell",c:"闻;气味",e:"👃",s:"The kitchen smells like dumplings."},
+{w:"smile",c:"微笑",e:"🙂",s:"Mike gave a big smile: nine miles!"},
+{w:"snake",c:"蛇",e:"🐍",s:"The game snake grows when it eats."},
+{w:"snow",c:"雪",e:"❄️",s:"Training moved inside because of snow."},
+{w:"soap",c:"肥皂",e:"🧼",s:"Wash your hands with soap."},
+{w:"sock",c:"袜子",e:"🧦",s:"Cora's socks do not match, but she scores."},
+{w:"sofa",c:"沙发",e:"🛋️",s:"The Rockets shout from the sofa."},
+{w:"soft",c:"柔软的;轻柔的",s:"Bolt spoke in a soft tone."},
+{w:"some",c:"一些",s:"Some levels are hard, all are fun."},
+{w:"somebody",c:"某人",s:"Somebody left a gift at the door."},
+{w:"something",c:"某事;某物",s:"Something moved in the dark forest."},
+{w:"sometimes",c:"有时",s:"Sometimes the best plan is to rest."},
+{w:"son",c:"儿子",s:"Their son plays drums in our band."},
+{w:"song",c:"歌曲",e:"🎵",s:"This song has a great drum part."},
+{w:"soon",c:"很快",s:"The crew needs food soon."},
+{w:"sorry",c:"抱歉的",s:"Sorry I am late, the bus was slow."},
+{w:"sound",c:"声音",e:"🔊",s:"A loud sound goes round the town."},
+{w:"soup",c:"汤",e:"🍲",s:"Coop cooked moon soup for the crew."},
+{w:"south",c:"南方",e:"🧭",s:"Birds fly south in winter."},
+{w:"space",c:"太空;空间",e:"🚀",s:"Dee works on a space team."},
+{w:"speak",c:"说话",e:"🗣️",s:"Speak up, the drums are loud!"},
+{w:"special",c:"特别的",e:"🌟",s:"Saturday is special: match day."},
+{w:"speed",c:"速度",e:"⚡",s:"You need speed, but keep it safe."},
+{w:"spell",c:"拼写",s:"Can you spell your name for me?"},
+{w:"spend",c:"花费(时间/钱)",s:"He spends Sundays reading comics."},
+{w:"spoon",c:"勺子",e:"🥄",s:"Bolt has a spoon-shaped tool."},
+{w:"sport",c:"运动",e:"🏅",s:"Cora was born for sport."},
+{w:"spring",c:"春天;弹簧",e:"🌸",s:"The season starts in spring."},
+{w:"square",c:"广场;正方形",e:"⬜",s:"The market is on the town square."},
+{w:"stadium",c:"体育场",e:"🏟️",s:"The stadium was full an hour early."},
+{w:"stage",c:"舞台;阶段",e:"🎭",s:"Max takes his place on the stage."},
+{w:"stairs",c:"楼梯",s:"Take the stairs, it is faster."},
+{w:"stamp",c:"邮票",e:"📮",s:"The letter needs one more stamp."},
+{w:"stand",c:"站立",s:"Stand tall before the whistle."},
+{w:"star",c:"星星;明星",e:"⭐",s:"They mark the spot with a star card."},
+{w:"start",c:"开始",e:"🏁",s:"Not a bad start, said Bolt."},
+{w:"station",c:"车站;站",e:"🚉",s:"The action station bell rang twice."},
+{w:"stay",c:"停留;保持",s:"Jay stays on his feet and scores."},
+{w:"steal",c:"偷",s:"The monkey steals your bananas in level two."},
+{w:"still",c:"仍然;静止的",s:"He still reads that comic every month."},
+{w:"stomach",c:"胃;肚子",s:"Butterflies in the stomach before the show."},
+{w:"stone",c:"石头",e:"🪨",s:"Bolt gave him a stone that could glow."},
+{w:"stop",c:"停止;车站",e:"🛑",s:"The bus stop is by the school gate."},
+{w:"store",c:"商店;储存",e:"🏬",s:"The game store opens at ten."},
+{w:"storm",c:"暴风雨",e:"⛈️",s:"The storm stopped the match for an hour."},
+{w:"story",c:"故事",e:"📖",s:"Every game tells a story."},
+{w:"straight",c:"笔直的;直接",s:"Go straight, then turn at the bank."},
+{w:"strange",c:"奇怪的",s:"A strange light crossed the sky."},
+{w:"street",c:"街道",e:"🛣️",s:"The game is free for the whole street."},
+{w:"strong",c:"强壮的",e:"💪",s:"Her form is strong, her pass is true."},
+{w:"student",c:"学生",e:"🎓",s:"Every student gets a library card."},
+{w:"study",c:"学习;书房",e:"📚",s:"Study first, then screen time."},
+{w:"stupid",c:"愚蠢的",s:"No question is stupid, asks the teacher."},
+{w:"subject",c:"科目;主题",s:"Music is his best subject."},
+{w:"suddenly",c:"突然地",s:"Suddenly the lights went out."},
+{w:"sugar",c:"糖",e:"🍬",s:"Fern stirred water with sugar for the bird."},
+{w:"suitcase",c:"行李箱",e:"🧳",s:"Pack the suitcase the night before."},
+{w:"summer",c:"夏天",e:"☀️",s:"In summer, Max becomes a teacher."},
+{w:"sun",c:"太阳",e:"🌞",s:"The sun was high and the sky was wide."},
+{w:"supermarket",c:"超市",e:"🛒",s:"We shop at the supermarket on Fridays."},
+{w:"sure",c:"确定的",s:"Cora is a sport star, for sure."},
+{w:"surname",c:"姓氏",s:"Write your surname in the first box."},
+{w:"surprise",c:"惊喜",e:"🎉",s:"The last page has a surprise."},
+{w:"sweater",c:"毛衣",e:"🧶",s:"Wear a sweater, it is cold out."},
+{w:"sweet",c:"甜的;糖果",e:"🍭",s:"The space meal was a sweet treat."},
+{w:"swim",c:"游泳",e:"🏊",s:"We swim on Wednesday evenings."},
+{w:"swimming pool",c:"游泳池",s:"The swimming pool opens at six."},
+{w:"table",c:"桌子",e:"🪑",s:"No phones at the dinner table."},
+{w:"take",c:"拿;带;乘坐",s:"Take a deep breath and play."},
+{w:"talk",c:"谈话",e:"💬",s:"They talked about space until midnight."},
+{w:"tall",c:"高的",s:"It was as big as a tall wall."},
+{w:"taste",c:"品尝;味道",e:"😋",s:"Taste the soup before you add salt."},
+{w:"taxi",c:"出租车",e:"🚕",s:"We took a taxi to the airport."},
+{w:"tea",c:"茶",e:"🍵",s:"Grandpa reads the paper with tea."},
+{w:"teach",c:"教",s:"Max teaches younger kids drumming."},
+{w:"teacher",c:"老师",e:"👩‍🏫",s:"Their teacher claps louder than anyone."},
+{w:"team",c:"团队;队伍",e:"🏈",s:"The team eats a real space meal."},
+{w:"teeth",c:"牙齿",e:"🦷",s:"Brush your teeth before bed."},
+{w:"telephone",c:"电话",e:"☎️",s:"The telephone rang during dinner."},
+{w:"television",c:"电视",e:"📺",s:"The match is on television tonight."},
+{w:"tell",c:"告诉",s:"Tell me the story of your first show."},
+{w:"tennis",c:"网球",e:"🎾",s:"Tennis on Saturday, drums on Sunday."},
+{w:"tent",c:"帐篷",e:"⛺",s:"We put up the tent by the lake."},
+{w:"terrible",c:"糟糕的",s:"The weather was terrible but we played."},
+{w:"test",c:"测试;考试",e:"📝",s:"He got thirty out of thirty on the test."},
+{w:"text",c:"短信;文本",e:"💬",s:"His band texted: show tonight!"},
+{w:"theatre",c:"剧院",e:"🎭",s:"The school theatre holds the concert."},
+{w:"thin",c:"瘦的;薄的",s:"Thero is a thin robot who thinks in maths."},
+{w:"thing",c:"东西;事情",s:"He loved every single thing he did."},
+{w:"think",c:"思考;认为",e:"🤔",s:"Think with me, said the robot."},
+{w:"thirsty",c:"口渴的",e:"🥤",s:"Running makes you thirsty, drink up."},
+{w:"ticket",c:"票",e:"🎫",s:"They win a golden ticket to the festival."},
+{w:"tidy",c:"整洁的;收拾",s:"Tidy your desk before you start."},
+{w:"tie",c:"平局;领带;系",s:"In the end they reach a tie."},
+{w:"time",c:"时间",e:"⏰",s:"Time for a cold drink after nine miles."},
+{w:"tired",c:"疲劳的",e:"😪",s:"Tired? Yes. Happy? Also yes."},
+{w:"toast",c:"吐司",e:"🍞",s:"Do not burn the toast again."},
+{w:"today",c:"今天",s:"Today is match day, wake up!"},
+{w:"together",c:"一起",e:"🤝",s:"They pushed the ball together at dawn."},
+{w:"toilet",c:"厕所",e:"🚻",s:"The toilet is down the hall."},
+{w:"tomato",c:"西红柿",e:"🍅",s:"Extra tomato in my sandwich, please."},
+{w:"tomorrow",c:"明天",s:"New game starting tomorrow."},
+{w:"tonight",c:"今晚",e:"🌙",s:"The show is tonight, are you ready?"},
+{w:"tooth",c:"牙齿",e:"🦷",s:"The dentist checked every tooth."},
+{w:"top",c:"顶部;最好的",s:"We climbed to the top of the hill."},
+{w:"touch",c:"触摸",s:"Do not touch the drum before the show."},
+{w:"tour",c:"旅行;巡演",s:"The band dreams of a world tour."},
+{w:"tourist",c:"游客",e:"📸",s:"Tourists take photos of the old bridge."},
+{w:"towel",c:"毛巾",s:"Bring a towel to swimming class."},
+{w:"town",c:"城镇",e:"🏘️",s:"Now the whole town is at the show."},
+{w:"toy",c:"玩具",e:"🧸",s:"It is no normal coin, it is a toy."},
+{w:"traffic",c:"交通",e:"🚦",s:"Heavy traffic made the bus late."},
+{w:"train",c:"火车;训练",e:"🚆",s:"They train hard, and it pays."},
+{w:"travel",c:"旅行",e:"🧳",s:"He wants to travel to Japan one day."},
+{w:"tree",c:"树",e:"🌳",s:"Kids gather under a big tree for drumming."},
+{w:"trip",c:"旅行;旅程",e:"🧳",s:"The space trip found an ice city."},
+{w:"trousers",c:"裤子",e:"👖",s:"His lucky trousers have a hole now."},
+{w:"true",c:"真实的",s:"The story sounds crazy but it is true."},
+{w:"try",c:"尝试",e:"💪",s:"Nice try, town. Just five kites at night."},
+{w:"turn",c:"转弯;轮流",s:"He makes a hard turn and wins."},
+{w:"twice",c:"两次",s:"Grace nods twice and steps back."},
+{w:"type",c:"类型;打字",s:"What type of music do you like?"},
+{w:"ugly",c:"丑的",s:"The game monster is ugly but slow."},
+{w:"umbrella",c:"雨伞",e:"☂️",s:"Take an umbrella, it may rain."},
+{w:"uncle",c:"叔叔;舅舅",s:"My uncle has a long beard and a drum."},
+{w:"understand",c:"理解",e:"💡",s:"No one understands the boy without a voice."},
+{w:"uniform",c:"制服;队服",e:"👕",s:"Wash your uniform before the final."},
+{w:"university",c:"大学",e:"🎓",s:"His sister studies music at university."},
+{w:"until",c:"直到",s:"They fly until midnight."},
+{w:"upstairs",c:"楼上",s:"His room is upstairs on the left."},
+{w:"use",c:"使用",s:"Use both hands for this beat."},
+{w:"useful",c:"有用的",s:"A map is useful in a new city."},
+{w:"usually",c:"通常",s:"We usually train on Saturday mornings."},
+{w:"vegetable",c:"蔬菜",e:"🥦",s:"Eat your vegetables, then dessert."},
+{w:"video",c:"视频",e:"📹",s:"They make a video game called Space Race."},
+{w:"village",c:"村庄",e:"🏡",s:"The village has one shop and two dogs."},
+{w:"visit",c:"参观;拜访",s:"Some places you visit, you do not change."},
+{w:"voice",c:"声音;嗓音",e:"🗣️",s:"The royal boy loses his voice."},
+{w:"wait",c:"等待",e:"⏳",s:"The Rockets wait and wait for the rain."},
+{w:"wake",c:"醒来",e:"⏰",s:"A robot fox woke up in a boy's home."},
+{w:"walk",c:"走路",e:"🚶",s:"Grace walks to the centre of the ice city."},
+{w:"wall",c:"墙",e:"🧱",s:"A ball fell from a tall wall."},
+{w:"want",c:"想要",s:"The shark just wants chips!"},
+{w:"warm",c:"温暖的",e:"☀️",s:"Arms sore, hearts warm."},
+{w:"wash",c:"洗",e:"🧼",s:"Wash the dishes after dinner."},
+{w:"watch",c:"观看;手表",e:"⌚",s:"Each kid gets to watch the chess match."},
+{w:"water",c:"水",e:"💧",s:"Joan rows down a slow road of water."},
+{w:"waterfall",c:"瀑布",e:"🏞️",s:"The key hides behind the waterfall."},
+{w:"wave",c:"波浪;挥手",e:"🌊",s:"The waves were high but Gail sailed on."},
+{w:"weak",c:"虚弱的",s:"The monster is strong but its tail is weak."},
+{w:"wear",c:"穿;戴",s:"The goat wears a coat and a bow."},
+{w:"weather",c:"天气",e:"🌤️",s:"Check the weather before the match."},
+{w:"website",c:"网站",e:"🌐",s:"The team website has all the news."},
+{w:"week",c:"星期",e:"📅",s:"Each week Dee checks the green beans."},
+{w:"weekend",c:"周末",s:"The robot music contest is this weekend."},
+{w:"welcome",c:"欢迎",e:"👋",s:"Welcome to the team, new player!"},
+{w:"west",c:"西方",e:"🧭",s:"The sun sets in the west."},
+{w:"wet",c:"湿的",e:"💦",s:"Jay runs down the wet field."},
+{w:"wheel",c:"轮子;方向盘",e:"🛞",s:"The boy takes the wheel at the last gate."},
+{w:"while",c:"当…时候",s:"Read while you wait for the bus."},
+{w:"white",c:"白色的",e:"⬜",s:"The kites rise white and bright."},
+{w:"whole",c:"整个的",s:"The whole town is found at the show."},
+{w:"wide",c:"宽的",s:"The sky was wide over the nine miles."},
+{w:"wife",c:"妻子",s:"The coach and his wife came to the show."},
+{w:"win",c:"赢",e:"🏆",s:"The last play wins the game."},
+{w:"wind",c:"风",e:"💨",s:"A light wind drives the kites higher."},
+{w:"window",c:"窗户",e:"🪟",s:"Close the window before the storm."},
+{w:"winter",c:"冬天",e:"❄️",s:"Training moves to the gym in winter."},
+{w:"wish",c:"愿望;希望",e:"🌠",s:"Shake the wish machine and see."},
+{w:"without",c:"没有",s:"No drummer plays without practice."},
+{w:"woman",c:"女人",s:"The woman at the shop plays bass."},
+{w:"wonderful",c:"精彩的",e:"🌟",s:"Fresh bread smells wonderful."},
+{w:"wood",c:"木头;树林",e:"🪵",s:"Drumsticks are made of hard wood."},
+{w:"word",c:"单词;话语",s:"He knows every word of this comic."},
+{w:"work",c:"工作;起作用",s:"Her wing will not work, so Fern helps."},
+{w:"world",c:"世界",e:"🌍",s:"They build worlds in this game."},
+{w:"worry",c:"担心",e:"😟",s:"Do not worry, Bolt can fix it."},
+{w:"write",c:"写",e:"✍️",s:"The boy wrote a note: my home is your home."},
+{w:"wrong",c:"错误的",s:"A wrong turn cost us the race."},
+{w:"year",c:"年",s:"This year the cup is ours."},
+{w:"yesterday",c:"昨天",s:"Yesterday we trained at the farm."},
+{w:"young",c:"年轻的",s:"Younger kids gather for drum class."},
+{w:"zebra",c:"斑马",e:"🦓",s:"The zebra in the game runs in lines."},
+{w:"zoo",c:"动物园",e:"🦒",s:"The class trip is to the zoo."},
+];
+/* ================= 引擎 ================= */
+let memStore={};
+const DEFAULT_P={ver:1,stage:"sort",sortIdx:0,known:{},box:{},due:{},grad:{},newPtr:0,streak:0,lastDay:"",days:0};
+function loadP(){try{const s=localStorage.getItem("ket40");return s?Object.assign({},DEFAULT_P,JSON.parse(s)):Object.assign({},DEFAULT_P);}catch(e){return Object.assign({},DEFAULT_P,memStore);}}
+let P=loadP();
+function saveP(){try{localStorage.setItem("ket40",JSON.stringify(P));}catch(e){memStore=JSON.parse(JSON.stringify(P));}}
+function todayStr(){return new Date().toISOString().slice(0,10);}
+function bumpStreak(){const t=todayStr();if(P.lastDay===t)return;
+  const y=new Date(Date.now()-864e5).toISOString().slice(0,10);
+  P.streak=(P.lastDay===y)?P.streak+1:1;P.lastDay=t;P.days++;saveP();}
+/* 发音 */
+let VOICE=null;
+function pickVoice(){const vs=speechSynthesis.getVoices();
+  VOICE=vs.find(v=>v.name.includes("Samantha"))||vs.find(v=>v.lang==="en-US")||vs.find(v=>v.lang.startsWith("en"))||null;}
+if("speechSynthesis" in window){pickVoice();speechSynthesis.onvoiceschanged=pickVoice;}
+function say(t,rate){if(!("speechSynthesis" in window))return;
+  speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(t);
+  u.lang="en-US";if(VOICE)u.voice=VOICE;u.rate=rate||0.85;speechSynthesis.speak(u);}
+/* 音效 */
+let AC=null;
+function beep(good){try{AC=AC||new (window.AudioContext||window.webkitAudioContext)();
+  const o=AC.createOscillator(),g=AC.createGain();o.connect(g);g.connect(AC.destination);
+  o.type=good?"triangle":"sawtooth";o.frequency.value=good?660:180;
+  g.gain.setValueAtTime(.16,AC.currentTime);g.gain.exponentialRampToValueAtTime(.001,AC.currentTime+.18);
+  o.start();o.stop(AC.currentTime+.2);}catch(e){}}
+let comboN=0;
+function showCombo(){comboN++;if(comboN<3)return;const c=document.getElementById("combo");
+  c.textContent=comboN+" 连击!"+(comboN>=8?" 🔥":"");c.classList.remove("pop");void c.offsetWidth;c.classList.add("pop");}
+/* 拼读变色:复用拼读小任务的规律 */
+const PATS=["tion","igh","ee","ea","ai","ay","oa","ow","oo","ou","ar","or","er","ir","ur","aw","oi","oy","sh","ch","th","ck","ng","all"];
+function esc(s){return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;");}
+function colorize(w){
+  const m=w.match(/([a-z])([bcdfghjklmnpqrstvz])e$/); // 神奇 e
+  if(m&&"aiou".includes(m[1])){const i=w.length-3;
+    return esc(w.slice(0,i))+'<span class="pat">'+esc(w[i])+'</span>'+esc(w[i+1])+'<span class="pat">e</span>';}
+  for(const p of PATS){const i=w.indexOf(p);
+    if(i>=0)return esc(w.slice(0,i))+'<span class="pat">'+esc(p)+'</span>'+esc(w.slice(i+p.length));}
+  return esc(w);}
+/* 渲染 */
+const $=s=>document.querySelector(s);
+function render(h){$("#app").innerHTML=
+ '<div class="topbar"><div class="brand">🚀 KET 单词四十天</div><div class="streak">🔥 '+P.streak+' 天</div></div>'+
+ '<div class="stage">'+h+'</div>';}
+/* ============ 首页 ============ */
+const SORT_PER_DAY=240, NEW_PER_DAY=15, REV_CAP=25;
+const INTERVALS=[0,1,2,4,7]; // box1-4 的复习间隔(天);box5 毕业
+function unknownIds(){const a=[];for(let i=0;i<WORDS.length;i++)if(P.known[i]===false)a.push(i);return a;}
+function dueIds(){const t=todayStr(),a=[];
+  for(const k in P.due)if(P.due[k]<=t&&!P.grad[k])a.push(+k);return a;}
+function home(){comboN=0;
+  if(P.stage==="sort"){
+    const total=WORDS.length,done=P.sortIdx;
+    render('<div class="card"><h1>'+(done===0?"第一步:闪电分拣 ⚡":"继续分拣")+'</h1>'+
+     '<div class="sub">'+(done===0?
+       "把 "+total+" 个 KET 词快速过一遍:认识的划走,不认识的进入学习池。凭直觉,每个词 2 秒,别纠结!":
+       "已分拣 "+done+"/"+total+",学习池已有 "+unknownIds().length+" 个词。")+'</div>'+
+     '<div class="pbar"><i style="width:'+(done/total*100)+'%"></i></div>'+
+     '<button class="btn" onclick="sortRun()">'+(done===0?"开始分拣":"继续 (约10分钟)")+'</button>'+
+     '<button class="btn ghost" onclick="say(\'Hello! Ready for KET words?\')">🔊 试试发音</button></div>'+
+     '<div class="footer-note">分拣预计 3 天完成 · 之后每天 15 个新词 · v3</div>');return;}
+  if(P.stage==="learn"){
+    const un=unknownIds(),due=dueIds();
+    const newLeft=un.filter(i=>!(i in P.box)).length;
+    const grad=Object.keys(P.grad).length;
+    if(newLeft===0&&due.length===0){P.stage="done";saveP();return home();}
+    render('<div class="card"><h1>第 '+(P.days+1)+' 天任务</h1>'+
+     '<div class="sub">今日:复习 '+Math.min(due.length,REV_CAP)+' 个到期词 + '+Math.min(newLeft,NEW_PER_DAY)+' 个新词。翻卡前先想意思,再自评。</div>'+
+     '<div class="stats"><div class="stat"><b>'+un.length+'</b><span>学习池</span></div>'+
+     '<div class="stat"><b>'+grad+'</b><span>已毕业 🎓</span></div>'+
+     '<div class="stat"><b>'+Math.ceil(newLeft/NEW_PER_DAY)+'</b><span>预计剩余天数</span></div></div>'+
+     '<button class="btn" onclick="learnRun()">开始今日任务 (10分钟)</button></div>'+
+     '<div class="footer-note">认识→间隔拉长 · 不认识→明天再见 · 连续 5 次认识即毕业 · v3</div>');return;}
+  render('<div class="card center"><div class="result-star">🏆</div><h1>学习池清空,全部毕业!</h1>'+
+   '<div class="sub">'+Object.keys(P.grad).length+' 个 KET 生词全部拿下,用时 '+P.days+' 天。<br>之后偶尔回来点下面的按钮抽查即可。</div>'+
+   '<button class="btn" onclick="finalReview()">随机抽查 20 词</button></div>');}
+/* ============ 分拣 ============ */
+function sortRun(){beep(true);sortOne(0);}
+function sortOne(count){
+  if(P.sortIdx>=WORDS.length){P.stage="learn";bumpStreak();saveP();
+    return render('<div class="card center"><div class="result-star">✨</div><h1>分拣全部完成!</h1>'+
+     '<div class="sub">学习池共 <b>'+unknownIds().length+'</b> 个生词。明天开始每天 15 个,预计 '+Math.ceil(unknownIds().length/NEW_PER_DAY)+' 天学完。</div>'+
+     '<button class="btn" onclick="home()">回首页</button></div>');}
+  if(count>=SORT_PER_DAY){bumpStreak();saveP();
+    return render('<div class="card center"><div class="result-star">🌟</div><h1>今日分拣完成!</h1>'+
+     '<div class="sub">已分拣 '+P.sortIdx+'/'+WORDS.length+',学习池 '+unknownIds().length+' 词。明天继续!</div>'+
+     '<button class="btn" onclick="home()">回首页</button></div>');}
+  const i=P.sortIdx,w=WORDS[i];
+  render('<div class="card"><div class="sub center">认识它吗?凭直觉,2 秒内选 ('+(P.sortIdx+1)+'/'+WORDS.length+')</div>'+
+   '<div class="sortemoji">'+(w.e||"")+'</div>'+
+   '<div class="sortword">'+colorize(w.w)+'</div>'+
+   '<div class="center" style="margin-top:6px"><button class="speaker sm" onclick="say(\''+w.w+'\')">🔊</button></div>'+
+   '<div class="sortbtns"><button class="sbtn yes" id="by">😀 认识</button><button class="sbtn no" id="bn">🆕 不认识</button></div></div>');
+  say(w.w);
+  $("#by").onclick=()=>{P.known[i]=true;P.sortIdx++;beep(true);showCombo();saveP();sortOne(count+1);};
+  $("#bn").onclick=()=>{P.known[i]=false;P.sortIdx++;beep(true);comboN=0;saveP();sortOne(count+1);};}
+/* ============ 学习 ============ */
+function learnRun(){beep(true);
+  const due=dueIds().slice(0,REV_CAP);
+  const fresh=unknownIds().filter(i=>!(i in P.box)).slice(0,NEW_PER_DAY);
+  const queue=due.map(i=>({i,isNew:false})).concat(fresh.map(i=>({i,isNew:true})));
+  if(queue.length===0){bumpStreak();return home();}
+  cardStep(queue,0,0);}
+function cardStep(queue,idx,got){
+  if(idx>=queue.length){bumpStreak();saveP();
+    return render('<div class="card center"><div class="result-star">🌟</div><h1>今日任务完成!</h1>'+
+     '<div class="sub">过了 '+queue.length+' 张卡,自评"认识" '+got+' 张。<br>连续学习 🔥 '+P.streak+' 天,明天见!</div>'+
+     '<button class="btn" onclick="home()">回首页</button></div>');}
+  const q=queue[idx],w=WORDS[q.i];
+  render('<div class="sub center" style="padding-bottom:4px">'+(idx+1)+' / '+queue.length+'</div>'+
+   '<div class="flip" id="flip"><div class="flipinner">'+
+   '<div class="face"><span class="tag '+(q.isNew?"new":"rev")+'">'+(q.isNew?"新词":"复习")+'</span>'+
+   '<div class="cardemoji">'+(w.e||"")+'</div>'+
+   '<div class="cardword">'+colorize(w.w)+'</div>'+
+   '<button class="speaker" onclick="event.stopPropagation();say(\''+w.w+'\')">🔊</button>'+
+   '<div class="hintflip">先想想意思 · 点卡片翻面</div></div>'+
+   '<div class="face back"><div class="cn">'+esc(w.c)+'</div>'+
+   '<div class="cardword" style="font-size:30px">'+colorize(w.w)+'</div>'+
+   '<div class="sent">'+esc(w.s)+'</div>'+
+   '<button class="speaker sm" onclick="event.stopPropagation();say(\''+w.s.replace(/'/g,"")+'\',0.95)">🔊 听整句</button></div>'+
+   '</div></div>'+
+   '<div class="grades" id="grades" style="visibility:hidden">'+
+   '<button class="gbtn g-know">😀 认识</button><button class="gbtn g-fuzzy">🤔 模糊</button><button class="gbtn g-no">😵 不认识</button></div>');
+  say(w.w);
+  const flip=$("#flip");
+  flip.onclick=()=>{flip.classList.add("on");$("#grades").style.visibility="visible";};
+  const box=P.box[q.i]||0;
+  document.querySelector(".g-know").onclick=()=>{grade(q.i,Math.min(box+1,5));beep(true);showCombo();cardStep(queue,idx+1,got+1);};
+  document.querySelector(".g-fuzzy").onclick=()=>{grade(q.i,Math.max(box,1));beep(true);comboN=0;cardStep(queue,idx+1,got);};
+  document.querySelector(".g-no").onclick=()=>{grade(q.i,1);beep(false);comboN=0;cardStep(queue,idx+1,got);};}
+function grade(i,box){P.box[i]=box;
+  if(box>=5){P.grad[i]=true;delete P.due[i];}
+  else{const d=new Date(Date.now()+INTERVALS[box]*864e5).toISOString().slice(0,10);P.due[i]=d;}
+  saveP();}
+function finalReview(){const g=Object.keys(P.grad);
+  const pickN=[];const pool=g.slice();
+  while(pickN.length<Math.min(20,pool.length)){pickN.push(pool.splice(Math.floor(Math.random()*pool.length),1)[0]);}
+  cardStep(pickN.map(i=>({i:+i,isNew:false})),0,0);}
+window.addEventListener("load",home);
+</script>
+</body>
+</html>
